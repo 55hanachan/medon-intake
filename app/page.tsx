@@ -6,19 +6,13 @@ type FormState = {
   visit_id: string;
   name: string;
   birthday: string;
-  height: string;
-  weight: string;
-  phone: string;
-  email: string;
-  consultation: string;
-  healthStatus: string;
-  other: string;
-  emergencyName: string;
-  emergencyPhone: string;
-  agreeTerms: boolean;
-  agreePrivacy: boolean;
-  agreeInsurance: boolean;
-  insuranceFile: File | null;
+  chief_complaint: string;
+  symptoms_duration: string;
+  severity: number;
+  has_fever: boolean;
+  has_pain: boolean;
+  has_chronic_disease: boolean;
+  pregnancy_possible: boolean;
 };
 
 export default function IntakePage() {
@@ -26,64 +20,43 @@ export default function IntakePage() {
     visit_id: "",
     name: "",
     birthday: "",
-    height: "",
-    weight: "",
-    phone: "",
-    email: "",
-    consultation: "",
-    healthStatus: "",
-    other: "",
-    emergencyName: "",
-    emergencyPhone: "",
-    agreeTerms: false,
-    agreePrivacy: false,
-    agreeInsurance: false,
-    insuranceFile: null,
+    chief_complaint: "",
+    symptoms_duration: "",
+    severity: 5,
+    has_fever: false,
+    has_pain: false,
+    has_chronic_disease: false,
+    pregnancy_possible: false,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const target = e.target as HTMLInputElement;
+    const { name, type, value } = target;
 
     setForm((prev) => ({
       ...prev,
       [name]:
         type === "checkbox"
           ? target.checked
-          : type === "file"
-          ? target.files?.[0] ?? null
+          : type === "range"
+          ? Number(value)
           : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("current form:", form);
 
-    const payload = {
-      visit_id: form.visit_id,
-      name: form.name,
-      birthday: form.birthday,
-      height: form.height,
-      weight: form.weight,
-      phone: form.phone,
-      email: form.email,
-      consultation: form.consultation,
-      healthStatus: form.healthStatus,
-      other: form.other,
-      emergencyName: form.emergencyName,
-      emergencyPhone: form.emergencyPhone,
-      agreeTerms: form.agreeTerms,
-      agreePrivacy: form.agreePrivacy,
-      agreeInsurance: form.agreeInsurance,
-    };
+    console.log("current form:", form);
 
     const res = await fetch("/api/intake", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(form),
     });
 
     const data = await res.json();
@@ -97,164 +70,201 @@ export default function IntakePage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f4f4f4", padding: 16 }}>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          maxWidth: 560,
-          margin: "0 auto",
-          background: "#fff",
-          borderRadius: 16,
-          padding: 24,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-        }}
-      >
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>
-          オンライン診療 事前問診
-        </h1>
-        <p style={{ color: "#666", marginBottom: 24 }}>
-          診療をスムーズに行うため、事前にご入力ください（3〜5分）
-        </p>
+    <main style={pageStyle}>
+      <form onSubmit={handleSubmit} style={cardStyle}>
+        <h1 style={titleStyle}>オンライン診療 事前問診</h1>
+        <p style={subStyle}>診療をスムーズに行うため、事前にご入力ください（3〜5分）</p>
 
-        <Section title="① 基本情報">
-          <Field label="visit_id">
-            <input name="visit_id" value={form.visit_id} onChange={handleChange} style={inputStyle} placeholder="例: V20260610-0001" />
-          </Field>
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>① 基本情報</h2>
 
           <Field label="お名前">
-            <input name="name" value={form.name} onChange={handleChange} style={inputStyle} placeholder="例: 伊勢秀昭" />
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="例: 伊勢秀昭"
+            />
           </Field>
 
           <Field label="生年月日">
-            <input type="date" name="birthday" value={form.birthday} onChange={handleChange} style={inputStyle} />
-          </Field>
-
-          <Field label="身長(cm)">
-            <input name="height" value={form.height} onChange={handleChange} style={inputStyle} placeholder="例: 176cm" />
-          </Field>
-
-          <Field label="体重(kg)">
-            <input name="weight" value={form.weight} onChange={handleChange} style={inputStyle} placeholder="例: 75kg" />
-          </Field>
-
-          <Field label="電話番号">
-            <input name="phone" value={form.phone} onChange={handleChange} style={inputStyle} placeholder="例: 08012345678" />
-          </Field>
-
-          <Field label="メールアドレス">
-            <input type="email" name="email" value={form.email} onChange={handleChange} style={inputStyle} placeholder="例: example@mail.com" />
-          </Field>
-        </Section>
-
-        <Section title="② ご相談内容">
-          <Field label="ご相談内容">
-            <select name="consultation" value={form.consultation} onChange={handleChange} style={inputStyle}>
-              <option value="">選択してください</option>
-              <option value="体重減少相談">体重減少相談</option>
-              <option value="GLP-1治療相談">GLP-1治療相談</option>
-              <option value="糖尿病相談">糖尿病相談</option>
-              <option value="その他">その他</option>
-            </select>
-          </Field>
-        </Section>
-
-        <Section title="③ 現在の健康状態">
-          <Field label="現在の病気・経過・症状など">
-            <textarea
-              name="healthStatus"
-              value={form.healthStatus}
+            <input
+              type="date"
+              name="birthday"
+              value={form.birthday}
               onChange={handleChange}
-              style={{ ...inputStyle, minHeight: 96, resize: "vertical" }}
-              placeholder="例: 体重増加傾向"
+              style={inputStyle}
             />
           </Field>
-        </Section>
 
-        <Section title="④ 保険証のアップロード">
-          <Field label="ファイルを選択">
-            <input type="file" name="insuranceFile" onChange={handleChange} style={inputStyle} />
-          </Field>
-
-          <label style={checkStyle}>
-            <input type="checkbox" name="agreeInsurance" checked={form.agreeInsurance} onChange={handleChange} />
-            保険証は本人のものです
-          </label>
-        </Section>
-
-        <Section title="⑤ 緊急連絡先">
-          <Field label="緊急連絡先の氏名">
-            <input name="emergencyName" value={form.emergencyName} onChange={handleChange} style={inputStyle} placeholder="例: 伊勢たえ子" />
-          </Field>
-
-          <Field label="緊急連絡先の電話番号">
-            <input name="emergencyPhone" value={form.emergencyPhone} onChange={handleChange} style={inputStyle} placeholder="例: 0901234567" />
-          </Field>
-        </Section>
-
-        <Section title="⑥ その他">
-          <Field label="自由記述">
-            <textarea
-              name="other"
-              value={form.other}
+          <Field label="visit_id">
+            <input
+              name="visit_id"
+              value={form.visit_id}
               onChange={handleChange}
-              style={{ ...inputStyle, minHeight: 96, resize: "vertical" }}
-              placeholder="自由記述"
+              style={inputStyle}
+              placeholder="例: V20260610-0001"
             />
           </Field>
-        </Section>
+        </section>
 
-        <Section title="⑦ 同意事項">
-          <label style={checkStyle}>
-            <input type="checkbox" name="agreeTerms" checked={form.agreeTerms} onChange={handleChange} />
-            利用規約に同意します
-          </label>
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>② ご相談内容</h2>
 
-          <label style={checkStyle}>
-            <input type="checkbox" name="agreePrivacy" checked={form.agreePrivacy} onChange={handleChange} />
-            個人情報の取り扱いに同意します
-          </label>
-        </Section>
+          <Field label="主訴">
+            <textarea
+              name="chief_complaint"
+              value={form.chief_complaint}
+              onChange={handleChange}
+              style={textareaStyle}
+              placeholder="例: 体重減少相談"
+            />
+          </Field>
+        </section>
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "14px 16px",
-            border: "none",
-            borderRadius: 10,
-            background: "#000",
-            color: "#fff",
-            fontWeight: 700,
-            marginTop: 16,
-            cursor: "pointer",
-          }}
-        >
-          問診を送信する
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>③ 現在の健康状態</h2>
+
+          <Field label="症状の期間">
+            <input
+              name="symptoms_duration"
+              value={form.symptoms_duration}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="例: 3か月"
+            />
+          </Field>
+        </section>
+
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>④ 重症度</h2>
+
+          <label style={labelStyle}>重症度（1〜10）: {form.severity}</label>
+          <input
+            type="range"
+            name="severity"
+            min="1"
+            max="10"
+            value={form.severity}
+            onChange={handleChange}
+            style={{ width: "100%" }}
+          />
+        </section>
+
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>⑤ 症状の有無</h2>
+
+          <CheckRow
+            name="has_fever"
+            checked={form.has_fever}
+            onChange={handleChange}
+            label="発熱あり"
+          />
+          <CheckRow
+            name="has_pain"
+            checked={form.has_pain}
+            onChange={handleChange}
+            label="痛みあり"
+          />
+          <CheckRow
+            name="has_chronic_disease"
+            checked={form.has_chronic_disease}
+            onChange={handleChange}
+            label="慢性疾患あり"
+          />
+          <CheckRow
+            name="pregnancy_possible"
+            checked={form.pregnancy_possible}
+            onChange={handleChange}
+            label="妊娠の可能性あり"
+          />
+        </section>
+
+        <button type="submit" style={buttonStyle}>
+          送信
         </button>
       </form>
-    </div>
+    </main>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section style={{ marginBottom: 20 }}>
-      <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{title}</h2>
-      <div style={{ display: "grid", gap: 12 }}>{children}</div>
-    </section>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{ display: "block", fontSize: 13, color: "#666", marginBottom: 6 }}>
-        {label}
-      </label>
+    <div style={{ marginBottom: 16 }}>
+      <label style={labelStyle}>{label}</label>
       {children}
     </div>
   );
 }
+
+function CheckRow({
+  name,
+  checked,
+  onChange,
+  label,
+}: {
+  name: string;
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  label: string;
+}) {
+  return (
+    <label style={checkStyle}>
+      <input type="checkbox" name={name} checked={checked} onChange={onChange} />
+      {label}
+    </label>
+  );
+}
+
+const pageStyle: React.CSSProperties = {
+  minHeight: "100vh",
+  background: "#f4f4f4",
+  padding: 16,
+};
+
+const cardStyle: React.CSSProperties = {
+  maxWidth: 560,
+  margin: "0 auto",
+  background: "#fff",
+  borderRadius: 16,
+  padding: 24,
+  boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: 24,
+  fontWeight: 700,
+  marginBottom: 8,
+};
+
+const subStyle: React.CSSProperties = {
+  color: "#666",
+  marginBottom: 24,
+};
+
+const sectionStyle: React.CSSProperties = {
+  marginBottom: 20,
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 16,
+  fontWeight: 700,
+  marginBottom: 12,
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 13,
+  color: "#666",
+  marginBottom: 6,
+};
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -266,10 +276,28 @@ const inputStyle: React.CSSProperties = {
   background: "#fff",
 };
 
+const textareaStyle: React.CSSProperties = {
+  ...inputStyle,
+  minHeight: 96,
+  resize: "vertical",
+};
+
 const checkStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: 8,
   fontSize: 14,
   marginTop: 8,
+};
+
+const buttonStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "14px 16px",
+  border: "none",
+  borderRadius: 10,
+  background: "#000",
+  color: "#fff",
+  fontWeight: 700,
+  marginTop: 16,
+  cursor: "pointer",
 };
