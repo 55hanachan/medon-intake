@@ -2,9 +2,24 @@
 
 import { useState } from "react";
 
+type FormState = {
+  visit_id: string;
+  name: string;
+  birthday: string;
+  chief_complaint: string;
+  symptoms_duration: string;
+  severity: number;
+  has_fever: boolean;
+  has_pain: boolean;
+  has_chronic_disease: boolean;
+  pregnancy_possible: boolean;
+};
+
 export default function IntakePage() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     visit_id: "",
+    name: "",
+    birthday: "",
     chief_complaint: "",
     symptoms_duration: "",
     severity: 5,
@@ -52,6 +67,39 @@ export default function IntakePage() {
   return (
     <form onSubmit={handleSubmit} style={{ padding: 20, maxWidth: 600 }}>
       <h1>🧑‍⚕️ 問診フォーム</h1>
+
+      <div>
+        <label>visit_id</label>
+        <input
+          name="visit_id"
+          value={form.visit_id}
+          onChange={handleChange}
+          style={{ width: "100%", marginBottom: 10 }}
+          placeholder="例: V20260610-0001"
+        />
+      </div>
+
+      <div>
+        <label>氏名</label>
+        <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          style={{ width: "100%", marginBottom: 10 }}
+          placeholder="例: 伊勢秀昭"
+        />
+      </div>
+
+      <div>
+        <label>生年月日</label>
+        <input
+          type="date"
+          name="birthday"
+          value={form.birthday}
+          onChange={handleChange}
+          style={{ width: "100%", marginBottom: 10 }}
+        />
+      </div>
 
       <div>
         <label>主訴</label>
