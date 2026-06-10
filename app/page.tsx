@@ -14,7 +14,7 @@ export default function IntakePage() {
     pregnancy_possible: false,
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
 
     setForm((prev) => ({
@@ -28,7 +28,9 @@ export default function IntakePage() {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     const res = await fetch("/api/intake", {
       method: "POST",
       headers: {
@@ -48,10 +50,9 @@ export default function IntakePage() {
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 600 }}>
+    <form onSubmit={handleSubmit} style={{ padding: 20, maxWidth: 600 }}>
       <h1>🧑‍⚕️ 問診フォーム</h1>
 
-      {/* 主訴 */}
       <div>
         <label>主訴</label>
         <input
@@ -62,7 +63,6 @@ export default function IntakePage() {
         />
       </div>
 
-      {/* 期間 */}
       <div>
         <label>症状の期間</label>
         <input
@@ -73,7 +73,6 @@ export default function IntakePage() {
         />
       </div>
 
-      {/* 重症度 */}
       <div>
         <label>重症度（1〜10）: {form.severity}</label>
         <input
@@ -87,7 +86,6 @@ export default function IntakePage() {
         />
       </div>
 
-      {/* チェック項目 */}
       <div>
         <label>
           <input
@@ -136,9 +134,8 @@ export default function IntakePage() {
         </label>
       </div>
 
-      {/* 送信 */}
       <button
-        onClick={handleSubmit}
+        type="submit"
         style={{
           marginTop: 20,
           padding: 10,
@@ -149,6 +146,6 @@ export default function IntakePage() {
       >
         送信
       </button>
-    </div>
+    </form>
   );
 }
