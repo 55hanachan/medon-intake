@@ -1,7 +1,17 @@
+<<<<<<< HEAD
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+=======
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+>>>>>>> c158259 (Add Supabase JS SDK)
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,6 +25,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+<<<<<<< HEAD
     const supabase = createClient(url, key);
 
     const body = await req.json();
@@ -82,13 +93,46 @@ export async function POST(req: NextRequest) {
           hint: error.hint ?? null,
           code: error.code ?? null,
         },
+=======
+    // Supabase保存
+    const { data: saved, error } = await supabase
+      .from('intake_forms')
+      .insert([
+        {
+          patient_name: data.patient_name,
+          age: Number(data.age),
+          sex: data.sex,
+          symptoms: data.symptoms,
+          history: data.history,
+          medications: data.medications,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      return NextResponse.json(
+        { ok: false, error: error.message },
+>>>>>>> c158259 (Add Supabase JS SDK)
         { status: 500 }
       );
     }
 
+<<<<<<< HEAD
     return NextResponse.json({ ok: true, data }, { status: 200 });
   } catch (err: any) {
     console.log("H: catch error:", err);
+=======
+    return NextResponse.json({
+      ok: true,
+      data: saved,
+    });
+
+  } catch (err) {
+    console.error('intake error:', err);
+>>>>>>> c158259 (Add Supabase JS SDK)
     return NextResponse.json(
       {
         ok: false,
